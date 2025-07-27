@@ -1,0 +1,30 @@
+name: api
+services:
+  postgres:
+    container_name: spring_postgres
+    environment:
+      POSTGRES_DB: api_asso
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+    image: postgres:16
+    networks:
+      springboot-network: null
+    ports:
+      - mode: ingress
+        target: 5432
+        published: "5432"
+        protocol: tcp
+    volumes:
+      - type: volume
+        source: pgdata
+        target: /var/lib/postgresql/data
+        volume: {}
+      - type: bind
+        source: ./database
+        target: /docker-entrypoint-initdb.d
+networks:
+  springboot-network:
+    name: api_springboot-network
+volumes:
+  pgdata:
+    name: api_pgdata
