@@ -1,17 +1,11 @@
-/**
- * 
- */
 package com.asso.repository;
 
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
-import comm.asso.model
+import com.asso.model.Employee;
 
 @Repository
-/**
- * 
- */
 public interface EmployeeRepository extends CrudRepository<Employee, Long> {
 
 }
