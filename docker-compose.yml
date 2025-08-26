@@ -1,30 +1,45 @@
-name: api
+version: "3.9"
+
 services:
   postgres:
     container_name: spring_postgres
+    image: postgres:16
     environment:
       POSTGRES_DB: api_asso
-      POSTGRES_PASSWORD: postgres
       POSTGRES_USER: postgres
-    image: postgres:16
-    networks:
-      springboot-network: null
+      POSTGRES_PASSWORD: postgres
     ports:
-      - mode: ingress
-        target: 5432
-        published: "5432"
-        protocol: tcp
+      - "5432:5432"   # si conflit => change en "5433:5432"
     volumes:
-      - type: volume
-        source: pgdata
-        target: /var/lib/postgresql/data
-        volume: {}
-      - type: bind
-        source: ./database
-        target: /docker-entrypoint-initdb.d
-networks:
-  springboot-network:
-    name: api_springboot-network
+      - pgdata:/var/lib/postgresql/data
+      - ./database:/docker-entrypoint-initdb.d
+    networks:
+      - springboot-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d api_asso"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  springboot:
+    build: .
+    container_name: spring_app
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/api_asso
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      # SPRING_JPA_HIBERNATE_DDL_AUTO: update   # optionnel selon ton projet
+      # SERVER_PORT: 8080                       # seulement si tu override ailleurs
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - springboot-network
+
 volumes:
   pgdata:
-    name: api_pgdata
+
+networks:
+  springboot-network:
